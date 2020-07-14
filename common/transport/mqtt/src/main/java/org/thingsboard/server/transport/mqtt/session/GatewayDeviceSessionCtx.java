@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2018 The Thingsboard Authors
+ * Copyright © 2016-2020 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,10 @@ public class GatewayDeviceSessionCtx extends MqttDeviceAwareSessionContext imple
                 .setDeviceIdLSB(deviceInfo.getDeviceIdLSB())
                 .setTenantIdMSB(deviceInfo.getTenantIdMSB())
                 .setTenantIdLSB(deviceInfo.getTenantIdLSB())
+                .setDeviceName(deviceInfo.getDeviceName())
+                .setDeviceType(deviceInfo.getDeviceType())
+                .setGwSessionIdMSB(parent.getSessionId().getMostSignificantBits())
+                .setGwSessionIdLSB(parent.getSessionId().getLeastSignificantBits())
                 .build();
         setDeviceInfo(deviceInfo);
     }
@@ -65,7 +69,7 @@ public class GatewayDeviceSessionCtx extends MqttDeviceAwareSessionContext imple
     @Override
     public void onGetAttributesResponse(TransportProtos.GetAttributeResponseMsg response) {
         try {
-            parent.getAdaptor().convertToGatewayPublish(this, response).ifPresent(parent::writeAndFlush);
+            parent.getAdaptor().convertToGatewayPublish(this, getDeviceInfo().getDeviceName(), response).ifPresent(parent::writeAndFlush);
         } catch (Exception e) {
             log.trace("[{}] Failed to convert device attributes response to MQTT msg", sessionId, e);
         }

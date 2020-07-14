@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2018 The Thingsboard Authors
+ * Copyright © 2016-2020 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.thingsboard.server.mqtt;
 
 import org.springframework.boot.SpringApplication;
@@ -27,7 +26,7 @@ import java.util.Arrays;
 @SpringBootConfiguration
 @EnableAsync
 @EnableScheduling
-@ComponentScan({"org.thingsboard.server.mqtt", "org.thingsboard.server.common", "org.thingsboard.server.transport.mqtt", "org.thingsboard.server.kafka"})
+@ComponentScan({"org.thingsboard.server.mqtt", "org.thingsboard.server.common", "org.thingsboard.server.transport.mqtt", "org.thingsboard.server.queue"})
 public class ThingsboardMqttTransportApplication {
 
     private static final String SPRING_CONFIG_NAME_KEY = "--spring.config.name";

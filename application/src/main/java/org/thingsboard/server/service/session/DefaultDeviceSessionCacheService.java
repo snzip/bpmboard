@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2018 The Thingsboard Authors
+ * Copyright © 2016-2020 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,9 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.thingsboard.server.common.data.id.DeviceId;
 import org.thingsboard.server.gen.transport.TransportProtos.DeviceSessionsCacheEntry;
+import org.thingsboard.server.queue.util.TbCoreComponent;
 
 import java.util.Collections;
-import java.util.UUID;
 
 import static org.thingsboard.server.common.data.CacheConstants.SESSIONS_CACHE;
 
@@ -31,6 +31,7 @@ import static org.thingsboard.server.common.data.CacheConstants.SESSIONS_CACHE;
  * Created by ashvayka on 29.10.18.
  */
 @Service
+@TbCoreComponent
 @Slf4j
 public class DefaultDeviceSessionCacheService implements DeviceSessionCacheService {
 
@@ -47,11 +48,4 @@ public class DefaultDeviceSessionCacheService implements DeviceSessionCacheServi
         log.debug("[{}] Pushing session data to cache: {}", deviceId, sessions);
         return sessions;
     }
-
-    public static void main (String[] args){
-        UUID uuid = UUID.fromString("d5db434e-9cd2-4903-8b3b-421b2d93664d");
-        System.out.println(uuid.getMostSignificantBits());
-        System.out.println(uuid.getLeastSignificantBits());
-    }
-
 }

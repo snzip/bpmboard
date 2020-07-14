@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2018 The Thingsboard Authors
+ * Copyright © 2016-2020 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,14 @@ import org.thingsboard.server.common.data.id.WidgetTypeId;
 import org.thingsboard.server.common.data.security.Authority;
 import org.thingsboard.server.common.data.widget.WidgetType;
 import org.thingsboard.server.dao.model.ModelConstants;
+import org.thingsboard.server.queue.util.TbCoreComponent;
+import org.thingsboard.server.service.security.permission.Operation;
+import org.thingsboard.server.service.security.permission.Resource;
 
 import java.util.List;
 
 @RestController
+@TbCoreComponent
 @RequestMapping("/api")
 public class WidgetTypeController extends BaseController {
 
@@ -45,7 +49,7 @@ public class WidgetTypeController extends BaseController {
         checkParameter("widgetTypeId", strWidgetTypeId);
         try {
             WidgetTypeId widgetTypeId = new WidgetTypeId(toUUID(strWidgetTypeId));
-            return checkWidgetTypeId(widgetTypeId, false);
+            return checkWidgetTypeId(widgetTypeId, Operation.READ);
         } catch (Exception e) {
             throw handleException(e);
         }
@@ -56,11 +60,14 @@ public class WidgetTypeController extends BaseController {
     @ResponseBody
     public WidgetType saveWidgetType(@RequestBody WidgetType widgetType) throws ThingsboardException {
         try {
-            if (getCurrentUser().getAuthority() == Authority.SYS_ADMIN) {
-                widgetType.setTenantId(new TenantId(ModelConstants.NULL_UUID));
+            if (Authority.SYS_ADMIN.equals(getCurrentUser().getAuthority())) {
+                widgetType.setTenantId(TenantId.SYS_TENANT_ID);
             } else {
                 widgetType.setTenantId(getCurrentUser().getTenantId());
             }
+
+            checkEntity(widgetType.getId(), widgetType, Resource.WIDGET_TYPE);
+
             return checkNotNull(widgetTypeService.saveWidgetType(widgetType));
         } catch (Exception e) {
             throw handleException(e);
@@ -74,7 +81,7 @@ public class WidgetTypeController extends BaseController {
         checkParameter("widgetTypeId", strWidgetTypeId);
         try {
             WidgetTypeId widgetTypeId = new WidgetTypeId(toUUID(strWidgetTypeId));
-            checkWidgetTypeId(widgetTypeId, true);
+            checkWidgetTypeId(widgetTypeId, Operation.DELETE);
             widgetTypeService.deleteWidgetType(getCurrentUser().getTenantId(), widgetTypeId);
         } catch (Exception e) {
             throw handleException(e);
@@ -82,7 +89,7 @@ public class WidgetTypeController extends BaseController {
     }
 
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
-    @RequestMapping(value = "/widgetTypes", params = { "isSystem", "bundleAlias"}, method = RequestMethod.GET)
+    @RequestMapping(value = "/widgetTypes", params = {"isSystem", "bundleAlias"}, method = RequestMethod.GET)
     @ResponseBody
     public List<WidgetType> getBundleWidgetTypes(
             @RequestParam boolean isSystem,
@@ -90,7 +97,7 @@ public class WidgetTypeController extends BaseController {
         try {
             TenantId tenantId;
             if (isSystem) {
-                tenantId = new TenantId(ModelConstants.NULL_UUID);
+                tenantId = TenantId.SYS_TENANT_ID;
             } else {
                 tenantId = getCurrentUser().getTenantId();
             }
@@ -101,7 +108,7 @@ public class WidgetTypeController extends BaseController {
     }
 
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
-    @RequestMapping(value = "/widgetType", params = { "isSystem", "bundleAlias", "alias" }, method = RequestMethod.GET)
+    @RequestMapping(value = "/widgetType", params = {"isSystem", "bundleAlias", "alias"}, method = RequestMethod.GET)
     @ResponseBody
     public WidgetType getWidgetType(
             @RequestParam boolean isSystem,
@@ -115,7 +122,8 @@ public class WidgetTypeController extends BaseController {
                 tenantId = getCurrentUser().getTenantId();
             }
             WidgetType widgetType = widgetTypeService.findWidgetTypeByTenantIdBundleAliasAndAlias(tenantId, bundleAlias, alias);
-            checkWidgetType(widgetType, false);
+            checkNotNull(widgetType);
+            accessControlService.checkPermission(getCurrentUser(), Resource.WIDGET_TYPE, Operation.READ, widgetType.getId(), widgetType);
             return widgetType;
         } catch (Exception e) {
             throw handleException(e);

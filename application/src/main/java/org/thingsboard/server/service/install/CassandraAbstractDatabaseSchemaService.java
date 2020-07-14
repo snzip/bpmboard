@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2018 The Thingsboard Authors
+ * Copyright © 2016-2020 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.thingsboard.server.service.install;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.thingsboard.server.dao.cassandra.CassandraInstallCluster;
 import org.thingsboard.server.service.install.cql.CQLStatementsParser;
 
@@ -30,6 +31,7 @@ public abstract class CassandraAbstractDatabaseSchemaService implements Database
     private static final String CASSANDRA_DIR = "cassandra";
 
     @Autowired
+    @Qualifier("CassandraInstallCluster")
     private CassandraInstallCluster cluster;
 
     @Autowired
@@ -43,10 +45,18 @@ public abstract class CassandraAbstractDatabaseSchemaService implements Database
 
     @Override
     public void createDatabaseSchema() throws Exception {
+        this.createDatabaseSchema(true);
+    }
+
+    @Override
+    public void createDatabaseSchema(boolean createIndexes) throws Exception {
         log.info("Installing Cassandra DataBase schema part: " + schemaCql);
         Path schemaFile = Paths.get(installScripts.getDataDir(), CASSANDRA_DIR, schemaCql);
         loadCql(schemaFile);
+    }
 
+    @Override
+    public void createDatabaseIndexes() throws Exception {
     }
 
     private void loadCql(Path cql) throws Exception {

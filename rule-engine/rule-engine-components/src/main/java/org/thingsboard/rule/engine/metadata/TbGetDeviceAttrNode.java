@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2018 The Thingsboard Authors
+ * Copyright © 2016-2020 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,11 @@ import org.thingsboard.rule.engine.util.EntitiesRelatedDeviceIdAsyncLoader;
 import org.thingsboard.server.common.data.id.DeviceId;
 import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.plugin.ComponentType;
+import org.thingsboard.server.common.msg.TbMsg;
 
 @Slf4j
 @RuleNode(type = ComponentType.ENRICHMENT,
-        name = "device attributes",
+        name = "related device attributes",
         configClazz = TbGetDeviceAttrNodeConfiguration.class,
         nodeDescription = "Add Originators Related Device Attributes and Latest Telemetry value into Message Metadata",
         nodeDetails = "If Attributes enrichment configured, <b>CLIENT/SHARED/SERVER</b> attributes are added into Message metadata " +
@@ -46,7 +47,8 @@ public class TbGetDeviceAttrNode extends TbAbstractGetAttributesNode<TbGetDevice
     }
 
     @Override
-    protected ListenableFuture<DeviceId> findEntityIdAsync(TbContext ctx, EntityId originator) {
-        return EntitiesRelatedDeviceIdAsyncLoader.findDeviceAsync(ctx, originator, config.getDeviceRelationsQuery());
+    protected ListenableFuture<DeviceId> findEntityIdAsync(TbContext ctx, TbMsg msg) {
+        return EntitiesRelatedDeviceIdAsyncLoader.findDeviceAsync(ctx, msg.getOriginator(), config.getDeviceRelationsQuery());
     }
+
 }
